@@ -1,0 +1,27 @@
+{
+  "name": "portal-head-tracker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "dev:all": "concurrently -k -n VITE,WS \"vite\" \"node ./tools/ws-server.js\"",
+    "build": "vite build",
+    "preview": "vite preview",
+    "preview:all": "concurrently -k -n PREVIEW,WS \"vite preview\" \"node ./tools/ws-server.js\"",
+    "ws": "node ./tools/ws-server.js"
+  },
+  "dependencies": {
+    "@mediapipe/tasks-vision": "^0.10.0",
+    "three": "^0.160.0"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "vite-plugin-static-copy": "^1.0.5",
+    "ws": "^8.18.0",
+    "concurrently": "^8.2.2"
+  }
+}

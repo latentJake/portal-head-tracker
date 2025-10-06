@@ -15,14 +15,16 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      BASE_URL: "/portal-head-tracker/"
+      VITE_LUCI_WS_URL: "wss://portal-ws-server.onrender.com"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 18
       - run: npm ci
-      # Build with the GH Pages subpath and your Render WS as default:
-      - run: BASE_URL="/portal-head-tracker/" VITE_LUCI_WS_URL="wss://portal-ws-server.onrender.com" npm run build
+      - run: npm run build
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

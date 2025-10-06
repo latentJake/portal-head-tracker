@@ -1,7 +1,28 @@
 // src/net/ws-client.js
+
+// Decide the *primary* WS URL and a local fallback.
+// Priority: ?ws= → VITE_LUCI_WS_URL → local (host:8787)
+function resolvePrimaryWS() {
+  const qs = new URLSearchParams(window.location.search);
+  const override = qs.get('ws');
+  if (override) return override;
+
+  const env = import.meta?.env?.VITE_LUCI_WS_URL;
+  if (env) return env;
+
+  return null; // means "use local fallback as primary"
+}
+
+function resolveLocalFallbackWS() {
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  const host  = location.hostname;
+  const port  = (import.meta?.env?.VITE_LUCI_WS_PORT || 8787);
+  return `${proto}://${host}:${port}`;
+}
+
 export class LuciWS {
   /**
-   * @param {string} url
+   * @param {string} [url]  optional explicit URL
    * @param {{
    *   debug?: boolean,
    *   heartbeatSec?: number,
@@ -22,7 +43,13 @@ export class LuciWS {
       onMessage = null,
     } = {}
   ) {
-    this.url = url;
+    // URL strategy
+    this.fallbackUrl = resolveLocalFallbackWS();
+    this.primaryUrl  = url || resolvePrimaryWS() || this.fallbackUrl;
+    this.url         = this.primaryUrl;
+    this.usingFallback = (this.url === this.fallbackUrl);
+    this.everOpened    = false;
+
     this.debug = debug;
     this.heartbeatSec = heartbeatSec;
 
@@ -50,9 +77,10 @@ export class LuciWS {
   isOpen() { return this.ws?.readyState === WebSocket.OPEN; }
 
   updateUrl(nextUrl) {
-    if (this.url === nextUrl) return;
+    if (!nextUrl || this.url === nextUrl) return;
     this.url = nextUrl;
-    // if connected, reconnect to the new URL
+    this.usingFallback = (this.url === this.fallbackUrl);
+    this.log('switching URL →', this.url);
     if (this.ws) {
       this.close();
       this.connect();
@@ -64,17 +92,23 @@ export class LuciWS {
     this.clearReconnect();
 
     try {
+      this.log('connecting to:', this.url);
       this.ws = new WebSocket(this.url);
     } catch (e) {
       this.log('WebSocket ctor failed:', e);
+      // If primary failed before any open, try fallback immediately
+      if (!this.everOpened && !this.usingFallback && this.fallbackUrl) {
+        this.updateUrl(this.fallbackUrl);
+        return;
+      }
       this.scheduleReconnect();
       return;
     }
 
     // bind once so we can remove cleanly later if needed
-    this._boundOpen = this._boundOpen || (ev => this.onOpen(ev));
-    this._boundClose = this._boundClose || (ev => this.onClose(ev));
-    this._boundError = this._boundError || (ev => this.onError(ev));
+    this._boundOpen    = this._boundOpen    || (ev => this.onOpen(ev));
+    this._boundClose   = this._boundClose   || (ev => this.onClose(ev));
+    this._boundError   = this._boundError   || (ev => this.onError(ev));
     this._boundMessage = this._boundMessage || (ev => this.onMessage(ev));
 
     this.ws.addEventListener('open', this._boundOpen);
@@ -85,7 +119,8 @@ export class LuciWS {
 
   onOpen = () => {
     this.connected = true;
-    this.log('connected');
+    this.everOpened = true;
+    this.log('connected (url=', this.url, ')');
     this.backoff = 1000; // reset backoff
     this.startHeartbeat();
 
@@ -100,13 +135,26 @@ export class LuciWS {
     this.connected = false;
     this.stopHeartbeat();
     if (this.onCloseCb) try { this.onCloseCb(); } catch {}
+
+    // If we've never opened and we're still on primary, try fallback once
+    if (!this.everOpened && !this.usingFallback && this.fallbackUrl) {
+      this.updateUrl(this.fallbackUrl);
+      return;
+    }
+
     this.scheduleReconnect();
   };
 
   onError = (e) => {
     this.log('error', e?.message || e);
     if (this.onErrorCb) try { this.onErrorCb(e); } catch {}
-    // let onClose handle the reconnect
+
+    // If we've never opened and we're still on primary, try fallback once
+    if (!this.everOpened && !this.usingFallback && this.fallbackUrl) {
+      this.updateUrl(this.fallbackUrl);
+      return;
+    }
+    // let onClose handle the reconnect normally
   };
 
   onMessage = (evt) => {
@@ -124,6 +172,7 @@ export class LuciWS {
   scheduleReconnect() {
     this.clearReconnect();
     const delay = this.backoff + Math.floor(Math.random() * 200); // tiny jitter
+    this.log(`reconnect in ${delay}ms`);
     this.reconnectTimer = setTimeout(() => this.connect(), delay);
     this.backoff = Math.min(this.maxBackoff, Math.round(this.backoff * 1.7));
   }

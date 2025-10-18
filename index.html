@@ -1,140 +1,169 @@
-<div class="wrap">
-  <h1>Portal Head Tracker - latentJake</h1>
-  <link rel="stylesheet" href="/src/style.css" />
-  <meta charset="UTF-8">
-  
-  <!-- SESSION CONTROLS -->
-  <section class="tva-panel">
-   
-      <legend>Session Controls</legend>
-      <div class="row">
-        <button id="start" class="tva-btn pill">Start</button>
-        <button id="stop" class="tva-btn pill">Stop</button>
-        <button id="toggleWebcam" class="tva-btn">Webcam: On</button>
-        <button id="toggleMesh" class="tva-btn">FaceMesh: Off</button>
-        <button id="toggle3d" class="tva-btn">3D Preview: On</button>
-        <button id="btnDocPiP" class="tva-btn">Picture In Picture</button>
-        <button id="btnPopout" class="tva-btn">Pop-out</button>
-        <span id="wsAddr" class="tva-badge">ws://—</span>
-        <span id="wsStatus" class="badge">WS: —</span>
-      </div>
-    
-  </section>
-
-  <!-- DEVICE & QUALITY -->
-  <section class="tva-panel">
-    
-      <legend>Device &amp; Quality</legend>
-      <div class="row">
-        <label>
-          Camera:
-          <select id="cameraSel" class="tva-select"></select>
-        </label>
-
-        <label>
-          Resolution:
-          <select id="resSel" class="tva-select">
-            <option value="640x480">640×480</option>
-            <option value="1280x720" selected>1280×720</option>
-            <option value="1920x1080">1920×1080</option>
-          </select>
-        </label>
-
-        <label>
-          Eye:
-          <select id="eyeSel" class="tva-select">
-            <option value="left">Left</option>
-            <option value="center" selected>Center</option>
-            <option value="right">Right</option>
-          </select>
-        </label>
-
-        <label>
-          Delegate:
-          <select id="delegate" class="tva-select">
-            <option value="GPU" selected>GPU</option>
-            <option value="CPU">CPU</option>
-          </select>
-        </label>
-
-        <label>
-          <input type="checkbox" id="mirrorFeed" />
-          Mirror Feed (X-Axis)
-        </label>
-      </div>
-   
-  </section>
-
-  <!-- CALIBRATION -->
-  <section class="tva-panel">
-    
-      <legend>Calibration</legend>
-      <div class="row">
-        <label>Monitor X (m)
-          <input id="monX" type="number" step="0.001" class="tva-input" />
-        </label>
-        <label>Monitor Y (m)
-          <input id="monY" type="number" step="0.001" class="tva-input" />
-        </label>
-
-        <label>X Offset (m)
-          <input id="offX" type="number" step="0.001" class="tva-input" />
-        </label>
-        <label>Y Offset (m)
-          <input id="offY" type="number" step="0.001" class="tva-input" />
-        </label>
-        <label>Z Offset (m)
-          <input id="offZ" type="number" step="0.001" class="tva-input" />
-        </label>
-
-        <label>X Gain/Sens
-          <input id="gainX" type="number" step="0.01" class="tva-input" />
-        </label>
-        <label>Y Gain/Sens
-          <input id="gainY" type="number" step="0.01" class="tva-input" />
-        </label>
-
-        <button id="saveCal" class="tva-btn">Save</button>
-      </div>
-  
-  </section>
-
-  <!-- PREVIEW ROW -->
-  <section class="row">
-    <!-- Camera + overlay -->
-    <section class="tva-panel" style="flex:1 1 48%;">
-      
-        <legend>Camera &amp; Overlay</legend>
-        <div id="preview">
-          <video id="video" playsinline muted style="object-fit:contain;background:#000"></video>
-          <canvas id="overlay"></canvas>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Portal Head Tracker · latentJake</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="app-header">
+        <h1 class="app-title">
+          Portal Head Tracker <span class="app-title__byline">· latentJake</span>
+        </h1>
+        <div class="app-header__actions">
+          <button id="themeToggle" class="tva-btn ghost" type="button" aria-pressed="false">
+            Light Mode
+          </button>
         </div>
-     
-    </section>
+      </header>
 
-    <!-- Three.js mini preview -->
-    <section class="tva-panel" style="flex:1 1 48%;">
-      
-        <legend>3D Preview</legend>
-        <div id="threeMount"></div>
-      
-    </section>
-  </section>
+      <main class="main-layout">
+        <div class="media-column">
+          <section class="tva-panel media-panel" aria-labelledby="cameraOverlayHeading">
+            <div class="panel-header">
+              <h2 id="cameraOverlayHeading" class="panel-title">Camera &amp; Overlay</h2>
+              <p class="panel-subtitle">Keep this visible so tracking stays active.</p>
+            </div>
+            <div id="preview" class="media-frame">
+              <video id="video" playsinline muted></video>
+              <canvas id="overlay"></canvas>
+            </div>
+          </section>
 
-  <!-- COORDINATES -->
-      <pre id="readout">—</pre>
-  <!-- STATUS & PERFORMANCE -->
-  <section class="tva-panel">
-    
-      <legend>Status &amp; Performance</legend>
-      <div class="row">
-        <span id="status" class="tva-badge">idle</span>
-        <span id="actual" class="tva-badge">Actual: —</span>
-        <span id="fps" class="tva-badge">cb: — • vid: — • inf: —</span>
-        <span id="ms"  class="tva-badge">proc: — ms</span>
-      </div>
-    
-  </section>
-</div>
+          <details class="tva-panel collapsible" data-section="preview" open>
+            <summary>3D Preview</summary>
+            <div class="panel-body">
+              <div id="threeMount" class="media-frame"></div>
+            </div>
+          </details>
+        </div>
 
-<script type="module" src="/src/main.js"></script>
+        <div class="control-column">
+          <details class="tva-panel collapsible" data-section="session" open>
+            <summary>Session Controls</summary>
+            <div class="panel-body">
+              <div class="cluster">
+                <button id="start" class="tva-btn pill">Start</button>
+                <button id="stop" class="tva-btn pill">Stop</button>
+                <button id="toggleWebcam" class="tva-btn">Webcam: On</button>
+                <button id="toggleMesh" class="tva-btn">FaceMesh: Off</button>
+                <button id="toggle3d" class="tva-btn">3D Preview: On</button>
+                <button id="btnDocPiP" class="tva-btn">Picture In Picture</button>
+                <button id="btnPopout" class="tva-btn">Pop-out</button>
+                <span id="wsAddr" class="tva-badge">ws://—</span>
+                <span id="wsStatus" class="tva-badge">WS: —</span>
+              </div>
+            </div>
+          </details>
+
+          <details class="tva-panel collapsible" data-section="device" open>
+            <summary>Device &amp; Quality</summary>
+            <div class="panel-body">
+              <div class="form-grid">
+                <label>
+                  <span>Camera</span>
+                  <select id="cameraSel" class="tva-select"></select>
+                </label>
+
+                <label>
+                  <span>Resolution</span>
+                  <select id="resSel" class="tva-select">
+                    <option value="640x480">640×480</option>
+                    <option value="1280x720" selected>1280×720</option>
+                    <option value="1920x1080">1920×1080</option>
+                  </select>
+                </label>
+
+                <label>
+                  <span>Eye</span>
+                  <select id="eyeSel" class="tva-select">
+                    <option value="left">Left</option>
+                    <option value="center" selected>Center</option>
+                    <option value="right">Right</option>
+                  </select>
+                </label>
+
+                <label>
+                  <span>Delegate</span>
+                  <select id="delegate" class="tva-select">
+                    <option value="GPU" selected>GPU</option>
+                    <option value="CPU">CPU</option>
+                  </select>
+                </label>
+
+                <label class="checkbox">
+                  <input type="checkbox" id="mirrorFeed" />
+                  <span>Mirror Feed (X-Axis)</span>
+                </label>
+              </div>
+            </div>
+          </details>
+
+          <details class="tva-panel collapsible" data-section="calibration" open>
+            <summary>Calibration</summary>
+            <div class="panel-body">
+              <div class="form-grid">
+                <label>
+                  <span>Monitor X (m)</span>
+                  <input id="monX" type="number" step="0.001" class="tva-input" />
+                </label>
+                <label>
+                  <span>Monitor Y (m)</span>
+                  <input id="monY" type="number" step="0.001" class="tva-input" />
+                </label>
+
+                <label>
+                  <span>X Offset (m)</span>
+                  <input id="offX" type="number" step="0.001" class="tva-input" />
+                </label>
+                <label>
+                  <span>Y Offset (m)</span>
+                  <input id="offY" type="number" step="0.001" class="tva-input" />
+                </label>
+                <label>
+                  <span>Z Offset (m)</span>
+                  <input id="offZ" type="number" step="0.001" class="tva-input" />
+                </label>
+
+                <label>
+                  <span>X Gain/Sens</span>
+                  <input id="gainX" type="number" step="0.01" class="tva-input" />
+                </label>
+                <label>
+                  <span>Y Gain/Sens</span>
+                  <input id="gainY" type="number" step="0.01" class="tva-input" />
+                </label>
+              </div>
+              <div class="panel-actions">
+                <button id="saveCal" class="tva-btn">Save</button>
+              </div>
+            </div>
+          </details>
+
+          <details class="tva-panel collapsible" data-section="status" open>
+            <summary>Status &amp; Performance</summary>
+            <div class="panel-body">
+              <div class="cluster">
+                <span id="status" class="tva-badge">idle</span>
+                <span id="actual" class="tva-badge">Actual: —</span>
+                <span id="fps" class="tva-badge">cb: — • vid: — • inf: —</span>
+                <span id="ms" class="tva-badge">proc: — ms</span>
+              </div>
+            </div>
+          </details>
+        </div>
+      </main>
+
+      <details class="tva-panel collapsible full-width" data-section="debug" open>
+        <summary>Debug Readout</summary>
+        <div class="panel-body">
+          <pre id="readout">—</pre>
+        </div>
+      </details>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

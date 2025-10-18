@@ -1,50 +1,65 @@
 /* ================================
-   LUCI / TVA THEME - styles.css
+   Portal Head Tracker – TVA theme
+   Modernized responsive UI system
    ================================ */
 
 /* --- Design Tokens --- */
 :root {
-  --tva-bg: #0b0b0b;                  /* base black */
-  --tva-grid: rgba(255, 177, 78, 0.08);
-  --tva-amber: #ffb14e;               /* primary amber */
-  --tva-amber-bright: #ffcc66;        /* hover/focus accent */
-  --tva-amber-dim: rgba(255, 177, 78, 0.16);
-  --tva-text: #ffb14e;                /* default text color */
-  --tva-text-dim: rgba(255, 177, 78, 0.85);
-  --tva-border: #ffb14e;
-  --tva-shadow: 0 0 0.75rem rgba(255, 177, 78, 0.25);
-  --tva-font-ui: "IBM Plex Mono", "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
-  --tva-radius: 8px;
-  --tva-gap: 4px;
-
   color-scheme: dark;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+
+  --tva-bg: #0b0b0b;
+  --tva-surface: rgba(16, 12, 6, 0.82);
+  --tva-surface-subtle: rgba(255, 177, 78, 0.06);
+  --tva-border: #ffb14e;
+  --tva-border-subtle: rgba(255, 177, 78, 0.35);
+  --tva-text: #ffb14e;
+  --tva-text-dim: rgba(255, 177, 78, 0.78);
+  --tva-amber: #ffb14e;
+  --tva-amber-bright: #ffcc66;
+  --tva-grid: rgba(255, 177, 78, 0.08);
+
+  --tva-font-ui: "IBM Plex Mono", "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+  --tva-radius: 12px;
+  --tva-gap: 12px;
+  --tva-transition: 180ms ease;
+}
+
+body[data-theme='light'] {
+  color-scheme: light;
+
+  --tva-bg: #f4f0e8;
+  --tva-surface: rgba(255, 255, 255, 0.86);
+  --tva-surface-subtle: rgba(0, 0, 0, 0.05);
+  --tva-border: #2c2010;
+  --tva-border-subtle: rgba(44, 32, 16, 0.25);
+  --tva-text: #20160c;
+  --tva-text-dim: rgba(32, 22, 12, 0.72);
+  --tva-amber: #c46c00;
+  --tva-amber-bright: #d9861f;
+  --tva-grid: rgba(44, 32, 16, 0.05);
 }
 
 /* --- Base / Reset-ish --- */
 *,
 *::before,
-*::after { box-sizing: border-box; }
+*::after {
+  box-sizing: border-box;
+}
 
-html, body {
+html,
+body {
   height: 100%;
 }
 
 body {
   margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
   background: var(--tva-bg);
   color: var(--tva-text);
   font: 14px/1.45 var(--tva-font-ui);
-  display: block; /* let the page flow naturally */
-  position: relative;
+  min-height: 100vh;
+  transition: background var(--tva-transition), color var(--tva-transition);
 }
 
-/* Subtle amber grid behind everything */
 body::before {
   content: "";
   position: fixed;
@@ -57,259 +72,321 @@ body::before {
   background-size: 24px 24px;
 }
 
-/* Containers */
-.wrap,
-#app {
-  max-width: 1280px;
-  margin: 16px auto;
-  padding: 0 12px 24px;
-  position: relative;
-  z-index: 1; /* above grid */
-}
-
-/* Typography */
-h1, h2, h3 {
-  margin: 8px 0 12px;
-  line-height: 1.0;
-  color: var(--tva-amber-bright);
-  text-transform: uppercase;
-}
-h1 { font-size: 18px; }
-h2 { font-size: 18px; }
-h3 { font-size: 16px; }
-
-/* Links */
 a {
   color: var(--tva-amber);
   text-decoration: none;
-  border-bottom: 1px dotted var(--tva-amber);
-}
-a:hover { color: var(--tva-amber-bright); }
-
-/* Cards / Panels */
-.tva-panel {
-  background: rgba(0,0,0,0.6);
-  border: 1px solid var(--tva-border);
-  border-radius: var(--tva-radius);
-  padding: 10px;
-  margin: 12px 0;
-  box-shadow: var(--tva-shadow);
+  border-bottom: 1px dotted currentColor;
 }
 
-.tva-title {
-  font-size: 14px;
+a:hover {
   color: var(--tva-amber-bright);
-  letter-spacing: 0.06em;
-  border-bottom: 2px solid var(--tva-border);
-  padding-bottom: 4px;
-  margin-bottom: 8px;
+}
+
+/* --- Layout --- */
+.app-shell {
+  position: relative;
+  z-index: 1;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.app-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.app-title {
+  margin: 0;
+  font-size: clamp(20px, 4vw, 26px);
   text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
-/* Horizontal divider / “orange line breaks” */
-.tva-divider {
-  height: 0;
-  border: none;
-  border-top: 2px solid var(--tva-border);
-  margin: 16px 0;
-  opacity: 1;
+.app-title__byline {
+  font-size: 0.75em;
+  color: var(--tva-text-dim);
 }
 
-/* Badges (status chips) */
-.tva-badge {
-  display: inline-block;
-  padding: 4px 8px;
-  border: 1px solid var(--tva-border);
-  border-radius: 6px;
-  background: var(--tva-amber-dim);
-  color: var(--tva-text);
+.app-header__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.main-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.media-column,
+.control-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+@media (max-width: 1024px) {
+  .main-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- Panels --- */
+.tva-panel {
+  background: var(--tva-surface);
+  border: 1px solid var(--tva-border-subtle);
+  border-radius: var(--tva-radius);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(6px);
+  transition: border-color var(--tva-transition), box-shadow var(--tva-transition), background var(--tva-transition);
+}
+
+.media-panel {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.panel-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.panel-title {
+  margin: 0;
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.panel-subtitle {
+  margin: 0;
   font-size: 12px;
+  color: var(--tva-text-dim);
+}
+
+.collapsible {
+  overflow: hidden;
+}
+
+.collapsible > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 16px 20px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.collapsible > summary::-webkit-details-marker {
+  display: none;
+}
+
+.collapsible > summary::after {
+  content: '';
+  margin-left: auto;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--tva-text);
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+  transition: transform var(--tva-transition);
+}
+
+.collapsible[open] > summary::after {
+  transform: rotate(225deg);
+}
+
+.panel-body {
+  padding: 0 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.panel-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.cluster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.form-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.checkbox span {
+  color: var(--tva-text-dim);
+}
+
+/* --- Form Elements --- */
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--tva-text-dim);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+
+.tva-input,
+.tva-select,
+input[type='number'],
+select {
+  width: 100%;
+  background: var(--tva-surface-subtle);
+  color: var(--tva-text);
+  border: 1px solid var(--tva-border-subtle);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font: 14px/1 var(--tva-font-ui);
+  transition: border-color var(--tva-transition), background var(--tva-transition), color var(--tva-transition);
+}
+
+.tva-input:focus,
+.tva-select:focus,
+input[type='number']:focus,
+select:focus {
+  outline: 2px solid var(--tva-amber-bright);
+  outline-offset: 2px;
 }
 
 /* --- Buttons --- */
-
-/* Base button: black with orange text */
 button,
 .tva-btn {
   appearance: none;
-  background: #000;
-  color: var(--tva-text);
+  border-radius: 999px;
   border: 1px solid var(--tva-border);
-  border-radius: var(--tva-radius);
-  padding: 0.55em 1.0em;
-  font: 500 14px/1 var(--tva-font-ui);
+  background: transparent;
+  color: var(--tva-text);
+  padding: 0.6em 1.25em;
+  font: 600 14px/1 var(--tva-font-ui);
   cursor: pointer;
-  transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, transform 0.06s ease;
-  margin: 4px;
+  transition: background var(--tva-transition), color var(--tva-transition), border-color var(--tva-transition), box-shadow var(--tva-transition);
 }
 
 button:hover,
 .tva-btn:hover {
   background: var(--tva-amber);
   color: #000;
-  box-shadow: var(--tva-shadow);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
 }
 
-/* Focus ring */
-button:focus-visible,
-.tva-btn:focus-visible,
-.tva-input:focus,
-.tva-select:focus,
-.tva-field:focus {
-  outline: 2px solid var(--tva-amber-bright);
-  outline-offset: 2px;
+button:active,
+.tva-btn:active {
+  transform: translateY(1px);
 }
 
-/* “Pill” button variant */
 .tva-btn.pill {
   border-radius: 999px;
-  padding: 0.55em 1.25em;
 }
 
-/* Quiet / ghost button variant */
 .tva-btn.ghost {
-  background: transparent;
-  border-style: dashed;
+  background: var(--tva-surface-subtle);
 }
+
 .tva-btn.ghost:hover {
   background: var(--tva-amber);
   color: #000;
 }
 
-/* Pressed micro-feedback */
-button:active,
-.tva-btn:active { transform: translateY(1px); }
-
-/* --- Forms --- */
-
-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin: 4px 8px 4px 0;
-  color: var(--tva-text-dim);
+button:focus-visible,
+.tva-btn:focus-visible {
+  outline: 2px solid var(--tva-amber-bright);
+  outline-offset: 2px;
 }
 
-.tva-input,
-.tva-select,
-input[type="number"],
-select {
-  background: #000;
-  color: var(--tva-text);
-  border: 1px solid var(--tva-border);
-  border-radius: 6px;
-  padding: 6px 8px;
-  font: 14px/1 var(--tva-font-ui);
-  min-width: 6rem;
-}
-
-fieldset {
-  border: 1px solid var(--tva-border);
-  border-radius: var(--tva-radius);
-  padding: 8px;
-  margin: 6px 0;
-}
-legend {
-  padding: 0 6px;
-  color: var(--tva-amber-bright);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-size: 12px;
-}
-
-/* --- Utility Layouts --- */
-
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--tva-gap);
-}
-
-/* Preview / Media frames */
-#preview,
-#threeMount {
+/* --- Media Frames --- */
+.media-frame {
   position: relative;
   width: 100%;
-  aspect-ratio: 16/9;
-  border: 1px solid #262018;
-  border-radius: 12px;
+  aspect-ratio: 16 / 9;
+  border-radius: 16px;
   overflow: hidden;
   background: #000;
-  box-shadow: inset 0 0 0 1px rgba(255,177,78,0.05);
+  border: 1px solid var(--tva-border-subtle);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
 }
 
-#preview .corner-tag {
-  position: absolute;
-  right: 8px;
-  top: 8px;
-  padding: 4px 8px;
-  border-radius: 8px;
-  border: 1px solid #444;
-  background: rgba(255,177,78,0.12);
-  color: var(--tva-amber);
-  font-size: 12px;
-}
-
-/* Video / Canvas stack */
-#video,
-#overlay {
+.media-frame video,
+.media-frame canvas {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
+  object-fit: contain;
 }
 
-/* Debug readout: larger text, single row, horizontal scroll if needed */
+/* --- Status chips --- */
+.tva-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--tva-border-subtle);
+  background: var(--tva-surface-subtle);
+  color: var(--tva-text);
+  font-size: 12px;
+}
+
+/* --- Debug readout --- */
 #readout {
-  white-space: nowrap;               /* force one line (newlines become spaces) */
-  overflow-x: auto;                  /* scroll horizontally if it overflows */
-  overflow-y: hidden;
-  border: 1px dashed var(--tva-border);
+  margin: 0;
+  padding: 12px 14px;
   border-radius: 10px;
-  padding: 10px 12px;
-  margin-top: 12px;
-  background: rgba(0,0,0,0.5);
+  border: 1px dashed var(--tva-border-subtle);
+  background: var(--tva-surface-subtle);
   color: var(--tva-text);
   font-family: var(--tva-font-ui);
-  font-size: 16px;                   /* bump size (try 18px if you want bigger) */
-  line-height: 1.4;
-}
- 
-
-/* Logo demo (if kept) */
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  transition: filter 300ms;
-  will-change: filter;
-}
-.logo:hover { filter: drop-shadow(0 0 2em rgba(255, 177, 78, 0.67)); }
-
-/* Cards (generic) */
-.card { padding: 1rem; }
-
-/* Accessibility: high-contrast focus for keyboard users */
-:focus:not(:focus-visible) { outline: none; }
-
-/* Light mode opt-out (we force dark TVA look) */
-@media (prefers-color-scheme: light) {
-  :root { color-scheme: dark; }
+  font-size: 16px;
+  white-space: nowrap;
+  overflow-x: auto;
 }
 
-/* --- Helpful little bits for your current HTML --- */
-
-/* status chips you already render */
-#status, #actual, #fps, #ms {
-  padding: 4px 8px;
-  border: 1px solid #444;
-  border-radius: 8px;
-  background: var(--tva-amber-dim);
-  color: var(--tva-text);
+/* --- Accessibility --- */
+:focus:not(:focus-visible) {
+  outline: none;
 }
 
-/* make inline control rows breathe better on wrap */
-.wrap > .row,
-.wrap > div[style*="display:flex"] {
-  gap: var(--tva-gap);
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }

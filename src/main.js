@@ -28,9 +28,10 @@ const toggleMeshBtn   = document.getElementById('toggleMesh');
 const toggle3dBtn     = document.getElementById('toggle3d');
 const mirrorFeedEl    = document.getElementById('mirrorFeed');
 
-const previewEl = document.getElementById('preview');
-const overlay   = document.getElementById('overlay');
-const octx      = overlay ? overlay.getContext('2d') : null;
+const previewEl      = document.getElementById('preview');
+const overlay        = document.getElementById('overlay');
+const octx           = overlay ? overlay.getContext('2d') : null;
+const themeToggleBtn = document.getElementById('themeToggle');
 
 // Calibration inputs
 const monXEl  = document.getElementById('monX');
@@ -56,6 +57,16 @@ const loadPrefs = () => { try { return JSON.parse(localStorage.getItem(PREF_KEY)
 const savePrefs = obj => {
   const prev = loadPrefs();
   localStorage.setItem(PREF_KEY, JSON.stringify({ ...prev, ...obj }));
+};
+
+const applyTheme = theme => {
+  const next = (theme === 'light') ? 'light' : 'dark';
+  document.body.dataset.theme = next;
+  if (themeToggleBtn) {
+    const isLight = next === 'light';
+    themeToggleBtn.textContent = isLight ? 'Dark Mode' : 'Light Mode';
+    themeToggleBtn.setAttribute('aria-pressed', String(isLight));
+  }
 };
 
 // ——————————————————————————————————————————————
@@ -101,6 +112,14 @@ const P = loadPrefs();
 if (resSel && P.resKey)        resSel.value = P.resKey;
 if (eyeSel && P.eye)           eyeSel.value = P.eye;
 if (delegateEl && P.delegate)  delegateEl.value = P.delegate;
+applyTheme(P.theme || 'dark');
+if (themeToggleBtn) {
+  themeToggleBtn.addEventListener('click', () => {
+    const nextTheme = (document.body.dataset.theme === 'light') ? 'dark' : 'light';
+    applyTheme(nextTheme);
+    savePrefs({ theme: nextTheme });
+  });
+}
 
 // ——————————————————————————————————————————————
 // Mirror Feed (persisted; default ON to preserve prior mirrored behavior)

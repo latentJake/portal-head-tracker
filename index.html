@@ -25,6 +25,7 @@
             <div class="panel-header">
               <h2 id="cameraOverlayHeading" class="panel-title">Camera &amp; Overlay</h2>
               <p class="panel-subtitle">Keep this visible so tracking stays active.</p>
+              <p class="panel-subtitle">Use PiP or Pop-out to keep tracking while minimized.</p>
             </div>
             <div id="preview" class="media-frame">
               <video id="video" playsinline muted></video>
@@ -54,6 +55,12 @@
                 <button id="btnPopout" class="tva-btn">Pop-out</button>
                 <span id="wsAddr" class="tva-badge">ws://—</span>
                 <span id="wsStatus" class="tva-badge">WS: —</span>
+              </div>
+              <div class="form-grid">
+                <label>
+                  <span>Stream Port</span>
+                  <input id="wsPort" type="number" min="1" max="65535" step="1" class="tva-input" />
+                </label>
               </div>
             </div>
           </details>
@@ -151,17 +158,12 @@
                 <span id="fps" class="tva-badge">cb: — • vid: — • inf: —</span>
                 <span id="ms" class="tva-badge">proc: — ms</span>
               </div>
+              <h3 class="panel-subheading">Coordinates</h3>
+              <pre id="readout">—</pre>
             </div>
           </details>
         </div>
       </main>
-
-      <details class="tva-panel collapsible full-width" data-section="debug" open>
-        <summary>Debug Readout</summary>
-        <div class="panel-body">
-          <pre id="readout">—</pre>
-        </div>
-      </details>
     </div>
 
     <script type="module" src="/src/main.js"></script>

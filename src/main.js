@@ -27,6 +27,7 @@ const toggleWebcamBtn = document.getElementById('toggleWebcam');
 const toggleMeshBtn   = document.getElementById('toggleMesh');
 const toggle3dBtn     = document.getElementById('toggle3d');
 const mirrorFeedEl    = document.getElementById('mirrorFeed');
+const wsPortEl        = document.getElementById('wsPort');
 
 const previewEl      = document.getElementById('preview');
 const overlay        = document.getElementById('overlay');
@@ -422,24 +423,61 @@ if (btnDocPiP && !('documentPictureInPicture' in window)) {
 const wsStatusEl = document.getElementById('wsStatus');
 const wsAddrEl   = document.getElementById('wsAddr');
 
-const setWS = (status, cls) => {
-  if (!wsStatusEl) return;
-  wsStatusEl.textContent = `WS: ${status}`;
-  wsStatusEl.className = `badge ${cls || ''}`;
-};
-
-// Uses env if provided (VITE_LUCI_WS_URL), otherwise ws(s)://<host>:8787
-const WS_URL =
+const defaultWsUrl =
   import.meta.env.VITE_LUCI_WS_URL ||
   `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.hostname}:8787`;
 
-if (wsAddrEl) wsAddrEl.textContent = WS_URL;
+const wsBaseUrl = new URL(defaultWsUrl, window.location.href);
+const inferredDefaultPort = wsBaseUrl.port
+  ? Number(wsBaseUrl.port)
+  : (wsBaseUrl.protocol === 'wss:' ? 443 : 80);
+
+let wsPort = Number.isFinite(Number(P.wsPort)) ? Number(P.wsPort) : inferredDefaultPort;
+if (!Number.isFinite(wsPort) || wsPort < 1 || wsPort > 65535) wsPort = inferredDefaultPort;
+
+const buildWsUrl = (port) => {
+  const next = new URL(wsBaseUrl.toString());
+  if (port) next.port = String(port);
+  return next.toString();
+};
+
+let currentWsUrl = buildWsUrl(wsPort);
+
+const reflectWsTarget = () => {
+  if (wsAddrEl) wsAddrEl.textContent = currentWsUrl;
+};
+
+reflectWsTarget();
+
+if (wsPortEl) {
+  wsPortEl.value = String(wsPort);
+  wsPortEl.addEventListener('change', () => {
+    const raw = Number(wsPortEl.value);
+    if (!Number.isFinite(raw)) {
+      wsPortEl.value = String(wsPort);
+      return;
+    }
+    const clamped = Math.min(65535, Math.max(1, Math.round(raw)));
+    wsPort = clamped;
+    wsPortEl.value = String(wsPort);
+    savePrefs({ wsPort });
+    currentWsUrl = buildWsUrl(wsPort);
+    reflectWsTarget();
+    if (ws) ws.updateUrl(currentWsUrl);
+  });
+}
+
+const setWS = (status, cls) => {
+  if (!wsStatusEl) return;
+  wsStatusEl.textContent = `WS: ${status}`;
+  wsStatusEl.className = `tva-badge ${cls || ''}`.trim();
+};
 
 // WS client instance + tiny TX pulse
 let ws = null;
 let txPulseTimer = null;
 
-ws = new LuciWS(WS_URL, {
+ws = new LuciWS(currentWsUrl, {
   debug: false,
   onOpen:  () => setWS('Connected', 'ok'),
   onClose: () => setWS('Reconnecting…', 'warn'),
